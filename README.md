@@ -1,2 +1,2 @@
 # VMware-Snapshot-Delete-Utility
-Powershell GUI for listing and delete snapshot on a VMware Data Center
+Powershell GUI to list and delete snapshots on a VMware datacenter
