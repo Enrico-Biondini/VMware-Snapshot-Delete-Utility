@@ -6,7 +6,7 @@
 [void] [System.Reflection.Assembly]::LoadWithPartialName("System.Windows.Forms")
 [void] [System.Windows.Forms.Application]::EnableVisualStyles()
 
-Import-Module VMware.PowerCLI
+Import-Module -Name VMware.VimAutomation.Core
 
 #-------------------------------------------------------------------------------
 
@@ -21,6 +21,7 @@ $connect_to_VIServer = {
         $btn_VIServer.Text = "Connect"
         $lbl_ConnectedTo.Text = "Disconnected"
         $Script:connected = $false
+        $grid_Snapshots.DataSource = $null
     }
     else {
         if (Connect-VIServer $VIServer) {
@@ -39,23 +40,32 @@ $connect_to_VIServer = {
 
 # Delete selected snapshot
 $delete_selected = {
-    $progressBar.Maximum = $grid_Snapshots.SelectedRows.Count
-    $progressBar.Minimum = 0
+    if ([System.Windows.Forms.MessageBox]::Show("Do you want to delete the selected snapshots?",
+            "Delete Snapshots", [System.Windows.Forms.MessageBoxButtons]::OKCancel) -eq "OK") {
+        $progressBar.Maximum = $grid_Snapshots.SelectedRows.Count
+        $progressBar.Minimum = 0
 
-    $grid_Snapshots.SelectedRows |
-    ForEach-Object {
-        $snapshot = Get-Snapshot -VM $_.Cells[0].Value
-        Remove-Snapshot -Snapshot $snapshot -Confirm:$false
-        $progressBar.Value++
+        $btn_VIServer.Enabled = $false
+        $btn_DeleteSelected.Enabled = $false
+
+        $grid_Snapshots.SelectedRows |
+        ForEach-Object {
+            $snapshot = Get-Snapshot -VM $_.Cells[0].Value
+            Remove-Snapshot -Snapshot $snapshot -Confirm:$false
+            $progressBar.Value++
+        }
+        Start-Sleep -Seconds 2
+        $progressBar.Value = 0
+        $grid_Snapshots.DataSource = [system.Collections.ArrayList] (
+            Get-VM | 
+            Get-Snapshot |
+            Select-Object VM, Name, SizeGB, Created, Description |
+            Sort-Object -Property Created
+        )
+
+        $btn_VIServer.Enabled = $true
+        $btn_DeleteSelected.Enabled = $true
     }
-    Start-Sleep -Seconds 2
-    $progressBar.Value = 0
-    $grid_Snapshots.DataSource = [system.Collections.ArrayList] (
-        Get-VM | 
-        Get-Snapshot |
-        Select-Object VM, Name, SizeGB, Created, Description |
-        Sort-Object -Property Created
-    )
 }
 
 #-------------------------------------------------------------------------------
@@ -105,7 +115,6 @@ $grid_Snapshots.AutoSizeColumnsMode = 'AllCells'
 $grid_Snapshots.AutoSize = $true
 $grid_Snapshots.Margin = '4, 4, 4, 4'
 $grid_Snapshots.TabIndex = 0
-$grid_Snapshots
 $grid_Snapshots.Anchor = (
     [System.Windows.Forms.AnchorStyles]::Bottom -bor
     [System.Windows.Forms.AnchorStyles]::Left -bor
