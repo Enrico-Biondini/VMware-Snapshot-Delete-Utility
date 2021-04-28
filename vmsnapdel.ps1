@@ -75,6 +75,7 @@ $main_form = New-Object System.Windows.Forms.Form
 $main_form.Text = 'VMware Snapshot Delete Utility'
 $main_form.Width = 800
 $main_form.Height = 600
+$main_form.Icon = New-Object System.Drawing.Icon ( $PSScriptRoot.ToString() + "\vmware.ico" )
 
 # Label
 $lbl_VIServer = New-Object System.Windows.Forms.Label
