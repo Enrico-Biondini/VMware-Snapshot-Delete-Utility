@@ -28,12 +28,13 @@ $connect_to_VIServer = {
             $lbl_ConnectedTo.Text = "Connected to $VIServer"
             $btn_VIServer.Text = "Disconnect"
             $Script:connected = $true
-            $grid_Snapshots.DataSource = [system.Collections.ArrayList] (
+            $snapshots = [system.Array] (
                 Get-VM | 
                 Get-Snapshot |
                 Select-Object VM, Name, SizeGB, Created, Description |
                 Sort-Object -Property Created
             )
+            $grid_Snapshots.DataSource = [system.Collections.ArrayList] $snapshots
         }
     }
 }
