@@ -28,13 +28,13 @@ $connect_to_VIServer = {
             $lbl_ConnectedTo.Text = "Connected to $VIServer"
             $btn_VIServer.Text = "Disconnect"
             $Script:connected = $true
-            $snapshots = [system.Array] (
+            $snapshots_list = [system.Array] (
                 Get-VM | 
                 Get-Snapshot |
                 Select-Object VM, Name, SizeGB, Created, Description |
                 Sort-Object -Property Created
             )
-            $grid_Snapshots.DataSource = [system.Collections.ArrayList] $snapshots
+            $grid_Snapshots.DataSource = [system.Collections.ArrayList] $snapshots_list
         }
     }
 }
@@ -57,13 +57,14 @@ $delete_selected = {
         }
         Start-Sleep -Seconds 2
         $progressBar.Value = 0
-        $grid_Snapshots.DataSource = [system.Collections.ArrayList] (
+        $snapshots_list = [system.Array] (
             Get-VM | 
             Get-Snapshot |
             Select-Object VM, Name, SizeGB, Created, Description |
             Sort-Object -Property Created
         )
-
+        $grid_Snapshots.DataSource = [system.Collections.ArrayList] $snapshots_list
+        
         $btn_VIServer.Enabled = $true
         $btn_DeleteSelected.Enabled = $true
     }
